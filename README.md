@@ -2,18 +2,18 @@
 
 > *This is a System Administration subject. You will discover **Docker** and you will set up your first web server.*
 
-## 1. 소개
+#### 1. 소개
 
 ft_server 는 시스템 관리 개념을 소개하기 위한 과제이다. *스크립트를 이용해 업무를 자동화*하는 것의 중요성을 깨닫게 될 것이다. 이를 위해 `Docker` 기술을 학습하고 완전한 웹 서버를 설치해본다.
 
-## 2. 일반 지침사항
+### 2. 일반 지침사항
 
 - **srcs** 라는 폴더 안에 서버 환경설정을 위한 모든 파일을 위치시켜라.
 - **Dockerfile** 은 깃 저장소의 루트에 있어야 한다. 이건 당신의 container를 build할 것이다.
   docer-compose는 사용할 수 없다. (docker-compose : container실행을 간편히 해주는 것 )
 - WordPress 웹 사이트에 필요한 모든 파일은 srcs안에 있어야 한다.
 
-## 3. 필수 사항
+#### 3. 필수 사항
 
 - 오직 하나의 Docker container 안에 `Ngnix` 웹 서버를 설치해야 한다.
   이 container의 OS는 `Debian Buster`여야 한다.
@@ -25,3 +25,190 @@ ft_server 는 시스템 관리 개념을 소개하기 위한 과제이다. *스�
 - URL에 따라 정확한 웹사이트로 연결될 수 있도록 처리해야 한다.
 - 언제든 해제할 수 있는 `autoindex`가 적용되어야 한다.
 - [채점 매뉴얼](https://yeosong1.github.io/ft_server-채점-방법)
+
+<br>
+
+# 선행지식
+
+아래 이미지([출처](https://stitchcoding.tistory.com/2))대로 ft_server 과제를 구현하면 된다. 맨 아래부터 하나씩 개념 공부를 해보자.
+
+![img](https://blog.kakaocdn.net/dn/cjYbCv/btqC4t6LHE2/Wqu39thIjmjhnvnqzh6Ck0/img.jpg)
+
+
+
+## 1. 도커 (Docker)
+
+![img](https://blog.kakaocdn.net/dn/b0ydwL/btqC6QmqIwH/0b6xq4gbUchSdcNz3CvWO1/img.png)
+
+### CONTAINERS 란?
+
+- 도커는 **컨테이너 기반의 오픈소스 가상화 플랫폼**이다.
+
+- 기존의 가상화 방식(VM)은 주로 **OS를 가상화**하였지만,  **컨테이너는 하드웨어를 분리하지 않고 하나의 머신 위에서 동작하며 OS 커널도 공유**한다. geust OS를 통해 OS를 복제할 필요가 없어 더 효율적인 관리가 가능한 것이다. 
+- 성능에 대한 감이 잘 안잡혀 찾아보니, 하나의 VM도 버거운 노트북에서 수십 개의 컨테이너를 실행시킬 수 있을 정도라고 한다.
+
+### IMAGE 란?
+
+![Docker image](https://subicura.com/assets/article_images/2017-01-19-docker-guide-for-beginners-1/docker-image.png)
+
+- 도커에서 가장 중요한 개념은 컨테이너와 함께 **이미지**라는 개념이다.
+- 이미지는 **컨테이너 실행에 필요한 파일과 설정값등을 포함하고 있는 것**으로 상태값을 가지지 않고 변하지 않는다(**Immutable**). 
+- 컨테이너는 이미지를 실행한 상태라고 볼 수 있고 추가되거나 변하는 값은 컨테이너에 저장된다. 같은 이미지에서 여러 개의 컨테이너를 생성할 수 있고 컨테이너의 상태가 바뀌거나 컨테이너가 삭제되더라도 이미지는 변하지 않고 그대로 남아있다.
+- 말그대로 이미지는 컨테이너를 실행하기 위한 모든 정보를 가지고 있기 때문에 더 이상 의존성 파일을 컴파일하고 이것저것 설치할 필요가 없게 된다. 이제 새로운 서버가 추가되면 미리 만들어 놓은 이미지를 다운받고 컨테이너를 생성만 하면 되는 것이다.
+
+### Docker Hub 란?
+
+- 도커 이미지의 용량은 보통 수백 메가로 수 기가가 넘는 경우도 흔하다. 이렇게 큰 용량의 이미지를 서버에 저장하고 관리하는 것은 쉽지 않은데 도커는 **Docker hub**를 통해 공개 이미지를 무료로 관리해 줍니다. 
+
+- [Docker hub](https://hub.docker.com)에서 공개된 이미지를 다운받아 사용하거나, [Docker Registry](https://docs.docker.com/registry/) 저장소를 직접 만들어 관리할 수 있다. 
+- 현재 공개된 도커 이미지는 50만개가 넘고 Docker hub의 이미지 다운로드 수는 80억회에 이른다고 한다. 누구나 쉽게 이미지를 만들고 배포할 수 있습니다. 이 모든게 무료.
+
+### Dockerfile 이란?
+
+- 도커는 기본적으로 이미지가 있어야 컨테이너를 생성하고 동작시킬 수 있다. `dockerfile`은 필요한 패키지를 설치하고 동작하기 위한 자신만의 설정을 담은 파일이고, 이 파일로 **이미지를 생성(빌드)**한다. (Makefile과 비슷)
+
+- `dockerfile`은 도커 명령어를 순서에 따라 빌드하며, `dockerfile`을 빌드할 때(이미지 파일로 변환 시킬 때)는 **layer 구조**를 보인다. 이미지가 계층적으로 하나씩 쌓이면서 생성되는 것이다. 
+
+##### Dockerfile 작성예시 및 명령어
+
+```dockerfile
+FROM    debian:buster
+
+LABEL   maintainer="daelee@student.42seoul.kr"
+
+RUN    	apt-get update && apt-get install -y \
+    	nginx \
+    	mariadb-server \
+    	php-fpm \
+    	php-mysql \
+    	php-cli \
+    	php-mbstring \
+    	openssl \
+    	vim
+
+COPY    srcs/nginx.conf /etc/nginx/sites-available/localhost
+COPY    srcs/config.inc.php /var
+COPY    srcs/wp-config.php /var
+COPY    srcs/phpMyAdmin-4.9.0.1.tar.gz ./
+COPY    srcs/wordpress-5.4.1.tar.gz ./
+COPY    srcs/init.sh ./
+COPY    srcs/theme.tar.gz ./
+
+EXPOSE  80 443
+
+CMD    	bash init.sh
+```
+
+- ##### FROM
+
+  - 유효한 Docker 파일은 FROM 명령으로 시작해야 한다.
+  - 새 작업을 시작할 베이스 이미지를 지정한다. 
+  - 우리 과제에서는 `debian:buster`로 설정.
+
+- ##### LABEL
+
+  - 이미지에 메타데이터를 추가한다.
+
+    - 이미지의 버전 정보, 작성자, 코멘트와 같이 이미지 상세 정보를 작성해두기 위한 명령.
+
+  - 아래 명령어로 이미지의 메타데이터를 확인할 수 있다.
+
+    ```bash
+    docker image inspect --format="{{ .Config.Lables }}" [이미지명]
+    ```
+
+- ##### RUN
+
+  -  **새 이미지 레이어를 만들어 내** 명령을 실행하고 결과를 커밋한다.
+  -  백슬래시(`\`)를 사용하여 다음 줄에 RUN 명령을 계속할 수 있다.
+  -  *주의* : 항상  `apt-get update` 와 `apt-get install`는 같은 RUN 실행줄에서 동시에 실행해 캐싱 문제를 방지. (같은 결과를 가져오더라도 RUN을 여러줄로 작성하면 image layer가 여러개 생성되고, RUN을 한줄로 작성하면 image layer가 하나 생성된다.)
+
+- ##### COPY
+
+  - 호스트OS의 파일 또는 디렉토리를 컨테이너 안의 경로로 복사한다.
+
+- ##### EXPOSE
+
+  - 해당 컨테이너가 런타임에 지정된 네트워크 포트에서 수신 대기중 이라는것을 알려준다.
+
+  - 일반적으로 dockerfile을 작성하는 사람과 컨테이너를 직접 실행할 사람 사이에서 공개할 포트를 알려주기 위해 문서 유형으로 작성할 때 사용한다.
+
+  - 이 명령 자체가 작성된 포트를 실행하여 listening 상태로 올려주거나 하지는 않기 때문에, 실제로 포트를 열기 위해선 container run 에서 -p 옵션을 사용해야 한다.
+
+    ```bash
+    docker run -p 80:80/tcp -p 80:80/udp ...
+    ```
+
+  - 프로토콜을 지정하지 않으면 기본값은 TCP.
+
+- ##### CMD
+
+  - 생성된 컨테이너를 실행할 명령어를 지정한다.
+  - 도커 파일에 CMD가 두 개 이상 있는 경우 마지막 CMD만 유효하다.
+
+
+<br>
+
+
+## 2. 데비안 (Devian)
+
+`데비안`은 우분투 같은 리눅스 OS 종류 중에 하나다. 우분투처럼 APT를 패키지 및 소프트웨어 관리자로 사용하고 있다. 사실 우분투는 데비안에서 나온 운영체제이며, 우분투에서 볼 수 있는 대부분의 핵심 유틸리티는 데비안에서 나왔다.
+
+데비안은 **안정성을 매우 중시하는 리눅스 배포판**이다. 때문에 안정성을 가장 큰 가치로 두어야 할 서버 쪽에서 상당한 인기를 끌고 있다. 
+
+2019년 7월 6일 배포된 최신 안정 버전은 **10.0(Buster)** 이다.
+
+- [공식 홈페이지](https://www.debian.org/index.ko.html)
+
+<br>
+
+
+
+## 3. Nginx
+
+![Google Search Trends: Nginx vs Apache](https://kinsta.com/wp-content/uploads/2019/06/Google-Search-Trends-Apache-vs-Nginx-1.png)
+
+`엔진엑스`는 무료로 제공되는 오픈소스 웹 서버 프로그램이다. 간단하게 **웹 서버는 클라이언트로 부터 요청이 발생했을 때 요청에 맞는 정적콘텐츠을 보내주는 역할**을 한다. `Nginx`는 규모가 작은 서비스이면서 정적 데이터 처리가 많은 서비스에 적합하다고 한다. 
+
+### 웹 서버가 하는 일
+
+![image-20200925160255258](https://user-images.githubusercontent.com/37580034/94279564-40bcbc00-ff87-11ea-9dd3-8276bcd302d1.png)
+
+1. 커넥션을 맺는다 *(클라이언트의 접속을 받아들이거나, 원치 않는 클라이언트라면 닫는다)*
+2. 요청을 받는다 *(HTTP 요청 메세지를 네트워크로부터 읽어들인다)* 
+3. 요청을 처리한다 *(요청 메세지를 해석하고 행동을 취한다)* 
+4. 리소스에 접근한다 *(메세지에서 지정한 리소스에 접근한다)*
+5. 응답을 만든다 *(올바른 헤더를 포함한 HTTP 응답 메세지를 생성한다)* 
+6. 응답을 보낸다 *(응답을 클라이언트에게 돌려준다)* 
+7. 트랜잭션을 로그로 남긴다 *(로그파일에 트랜잭션 완료에 대한 기록을 남긴다)* 
+
+#### 프락시 (Proxy)
+
+- Nginx는 일반적인 HTTP의 웹서버의 역할 외에도 **proxy**, **reverse proxy(대리 프락시) 서버**의 역할 또한 가능하다. 
+
+- 웹 프락시 서버는 클라이언트와 서버 사이에서 트랜잭션을 수행하는 중개인이며, 같은 프로토콜을 사용하는 둘 이상의 애플리케이션을 연결한다.
+
+  ![img](https://camo.githubusercontent.com/33ee2c7e4da4720e5b7e48e2f9fe025a1cc34f45/68747470733a2f2f696d616765732e76656c6f672e696f2f696d616765732f6a65686a6f6e672f706f73742f30343939353063642d666137662d346430362d613434652d6261363737376165666665392f696d6167652e706e67)
+
+- 프락시는 보안을 개선하고, 성능을 높여주며, 비용을 절약한다. 그리고 프락시 서버는 모든 HTTP 트래픽을 감시하고 수정할 수 있다. 프락시는 아래와 같은 일을 한다.
+
+  - 어린이 필터
+  - 문서 접근 제어자
+  - 보안 방화벽 
+  - 웹 캐시
+
+- ##### 대리 프락시 (reverse proxy) 란?
+
+  대리 프락시는 웹 서버인 것처럼 위장해 클라이언트의 요청을 받지만 웹 서버와는 달리 요청 받은 콘텐츠의 위치를 찾아내기 위해 다른 서버와 커뮤니케이션을 시작한다. 대리 프락시는 공용 콘텐츠에 대한 느린 웹 서버의 성능을 개선하기 위해 사용될 수 있다. 이런 식으로 사용되는 대리 프락시를 흔히 서버 가속기라고 부른다. 
+
+<br>
+
+
+
+## 4. phpMyAdmin
+
+php를 기반으로 생성된 **mySQL의 GUI**로서 웹에서 실행할 수 있는 프로그램이다. 
+
+- 데비안에 phpmyadmin을 바로 다운로드 할 수 있게하는 패키지는 현재 없다.
+
+- [공식 홈페이지](https://www.phpmyadmin.net)
