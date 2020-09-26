@@ -212,3 +212,227 @@ php를 기반으로 생성된 **mySQL의 GUI**로서 웹에서 실행할 수 있
 - 데비안에 phpmyadmin을 바로 다운로드 할 수 있게하는 패키지는 현재 없다.
 
 - [공식 홈페이지](https://www.phpmyadmin.net)
+
+
+<br>
+# 시작하기
+
+#### 1. 도커 설치 및 시작, 주요 명령어 확인
+
+- [Docker Desktop for Mac](https://hub.docker.com/editions/community/docker-ce-desktop-mac/)에서 `Stable` 버전 설치
+
+- 설치가 완료되면 상단바에 고래 아이콘 등장한다. 도커가 실행중이라는 의미, 즉 터미널에서 도커 접근 가능.
+
+- [도커 명령어 모음](https://yeosong1.github.io/도커-명령어-모음)
+
+  - 컨테이너 조회 (실행 중, 중지된 것까지 포함)
+
+    ```bash
+    docker ps -a
+    ```
+
+  - 컨테이너 중지 
+
+    ```bash
+    docker stop <컨테이너 이름 혹은 아이디>
+    ```
+
+  - 컨테이너 시작 (중지 된 컨테이너 시작) 및 재시작 (실행 중인 컨테이너 재부팅)
+
+    ```bash
+    docker start <컨테이너 이름 혹은 아이디>
+    docker restart <컨테이너 이름 혹은 아이디>
+    ```
+
+  - 컨테이너 접속 (실행중인 컨테이너에 접속)
+
+    ```bash
+    docker attach <컨테이너 이름 혹은 아이디>
+    ```
+
+    
+
+#### 2. 도커로 데비안 버스터 이미지 생성
+
+```sh
+docker pull debian:buster 
+```
+
+확인하려면 `docker images` 
+
+![image-20200925171325218](https://user-images.githubusercontent.com/37580034/94279988-d8baa580-ff87-11ea-89c0-8d77c0f96ee9.png)
+
+
+
+#### 3. 도커로 데비안 버스터 환경 실행 및 접속
+
+```bash
+docker run -it --name con_debian -p 80:80 -p 443:443 debian:buster
+```
+
+- `-i`옵션은 interactive(입출력), `-t` 옵션은 tty(터미널) 활성화
+  -  일반적으로 터미널 사용하는 것처럼 컨테이너 환경을 만들어주는 옵션
+- `--name [컨테이너 이름]` 옵션을 통해 컨테이너 이름을 지정할 수 있다. 안하면 랜덤으로 생성? 
+- `-p 호스트포트번호:컨테이너포트번호` 옵션은 컨테이너의 포트를 개방한 뒤 호스트 포트와 연결한다.
+  - 컨테이너 포트와 호스트 포트에 대한 개념이 궁금하다면 [여기](https://blog.naver.com/alice_k106/220278762795) 참고.
+- `buster`를 명시하지 않아도 자동으로 최신 버전을 불러온다.
+
+터미널 창이 아래처럼 바뀌면 데비안 bash에 **접속**한 것이다. 
+
+![image-20200925194314667](https://user-images.githubusercontent.com/37580034/94279991-d8baa580-ff87-11ea-847b-e0eccc81b7a3.png)
+
+종료하고 싶다면 `exit`. 종료한다고 컨테이너가 중지되는 것은 아니다. 컨테이너는 실행 중인 상태에서 접속만 끊은 것이라고 생각하면 된다. 다시 접속하고 싶다면 attach 명령어 사용.
+
+
+
+#### 4. 데비안 버스터에 Nginx, cURL 설치
+
+```bash
+apt-get -y install nginx curl
+```
+
+- 데비안에서는 패키지 매니저로 `apt-get`을 사용한다.
+  - 뭔가 설치가 잘 안되면 `apt-get update`, `apt-get upgrade` 순서대로 진행하고 다시 설치.
+- `cURL`은 서버와 통신할 수 있는 커맨드 명령어 툴이다. **url을 가지고 할 수 있는 것들은 다할 수 있다.** 예를 들면, http 프로토콜을 이용해 웹 페이지의 소스를 가져온다거나 파일을 다운받을 수 있다. ftp 프로토콜을 이용해서는 파일을 받을 수 있을 뿐 아니라 올릴 수도 있다. 
+  - 자세한 curl 사용법과 옵션은 [여기](https://shutcoding.tistory.com/23) 참고.
+
+
+
+#### 5. Nginx 서버 구동 및 확인
+
+- nginx 서버 실행
+
+  ```bash
+  service nginx start
+  ```
+
+- nginx 상태 확인
+
+  ```bash
+  service nginx status
+  ```
+
+  `[ ok ] nginx is running.` 가 뜨면 서버가 잘 돌아가고 있다는 뜻이다.
+
+  localhost:80 에 접속해보면 서버와의 성공적인 첫 소통을 확인할 수 있다.
+
+  ![image-20200925200151973](https://user-images.githubusercontent.com/37580034/94279993-d9533c00-ff87-11ea-9aca-e12eb2a37632.png)
+
+  같은 내용을 터미널을 통해서도 확인할 수 있다. 아까 다운받은 curl 을 사용한 방식이다.
+
+  ```bash
+  curl localhost
+  ```
+
+  ![image-20200925200318037](https://user-images.githubusercontent.com/37580034/94279995-d9ebd280-ff87-11ea-84b7-17390b509ef1.png)
+
+- nginx 중지
+
+  ```bash
+  service nginx stop 
+  ```
+
+  
+
+#### 6. self-signed SSL 인증서 생성
+
+- HTTPS(Hypertext Transfer Protocol over Secure Socket Layer)는 `SSL`위에서 돌아가는 HTTP의 평문 전송 대신에 **암호화된 통신을 하는 프로토콜**이다. 
+
+- 이런 HTTPS를 통신을 서버에서 구현하기 위해서는 *신뢰할 수 있는 상위 기업*이 발급한 인증서가 필요로 한데 이런 발급 기관을 **CA(Certificate authority)**라고 한다. CA의 인증서를 발급받는것은 당연 무료가 아니다. 
+- self-signed SSL 인증서는 **자체적으로 발급받은 인증서이며, 로그인 및 기타 개인 계정 인증 정보를 암호화**한다. 당연히 브라우저는 신뢰할 수 없다고 판단해 접속시 보안 경고가 발생한다.
+- self-signed SSL 인증서를 만드는 방법은 몇 가지가 있는데, 무료 오픈소스인 `openssl` 을 이용해 쉽게 만들수 있다. 
+  - HTTPS를 위해 필요한 `개인키(.key)`, `서면요청파일(.csr)`, `인증서파일(.crt)`을 openssl이 발급해준다.
+
+##### openssl 설치
+
+```bash
+apt-get -y install openssl
+```
+
+##### 개인키 및 인증서 생성
+
+```bash
+openssl req -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=KR/ST=Seoul/L=Seoul/O=42Seoul/OU=Lee/CN=localhost" -keyout localhost.dev.key -out localhost.dev.crt
+```
+
+localhost.dev.key 와 localhost.dev.crt가 생성된다. 옵션들을 하나하나 확인해보면,
+
+- req : 인증서 요청 및 인증서 생성 유틸.
+- -newkey : 개인키를 생성하기 위한 옵션.
+- -keyout <키 파일 이름> : 키 파일 이름을 지정해 키 파일 생성.
+- -out <인증서 이름> : 인증서 이름을 지정해 인증서 생성.
+- days 365 : 인증서의 유효기간을 작성하는 옵션.
+
+##### 권한제한
+
+```bash
+mv localhost.dev.crt etc/ssl/certs/
+mv localhost.dev.key etc/ssl/private/
+chmod 600 etc/ssl/certs/localhost.dev.crt etc/ssl/private/localhost.dev.key
+```
+
+
+
+#### 7. Nginx에 ssl 설정
+
+- `etc/nginx/sites-available/default` 파일을 수정해줄건데, 좀 더 편한 접근을 위해 vim을 설치해준다.
+
+  ```bash
+  apt-get -y install vim
+  vim etc/nginx/sites-available/default
+  ```
+
+- `default` 파일에 https 연결을 위한 설정을 작성한다.
+
+  원래는 서버 블록이 하나이며 80번 포트만 수신대기 상태인데, https 연결을 위래 443 포트를 수신대기하고 있는 서버 블록을 추가로 작성해야 한다.
+
+  ```nginx
+  server {
+  	listen 80;
+  	listen [::]:80;
+  
+  	return 301 https://$host$request_uri;
+  }
+  
+  server {
+  	listen 443 ssl;
+  	listen [::]:442 ssl;
+  
+  	# ssl 설정
+  	ssl on;
+  	ssl_certificate /etc/ssl/certs/localhost.dev.crt;
+  	ssl_certificate_key /etc/ssl/private/localhost.dev.key;
+  
+  	# 서버의 root디렉토리 설정
+  	root /var/www/html;
+  
+  	# 읽을 파일 목록
+  	index index.html index.htm index.nginx-debian.html;
+  
+  	server_name ft_server;
+  	location / {
+  		try_files $uri $uri/ =404;
+  	}
+  }
+  ```
+
+  - 80번 포트로 수신되면 443 포트로 리다이렉션 시켜준다.
+  - 443 포트를 위한 서버 블록에는 ssl on 과 인증서의 경로를 작성해준다. 나머지는 기존에 있던 설정 그대로.
+
+- 바뀐 설정을 nginx에 적용한다
+
+  ```bash
+  service nginx reload
+  ```
+
+- 브라우저에서 https://localhost 로 접속했을 때 경고문구가 뜨면 성공.
+
+  ![image](https://user-images.githubusercontent.com/37580034/94280152-09024400-ff88-11ea-9395-83f9ed440a30.png)
+
+  mac의 chrome에서는  ‘고급’ 설정을 통해서 안전하지 않은 사이트임을 인지하고 접속하는 버튼이 없다.
+
+  ##### 임시 조치 (꼭 신뢰하는 사이트에서만 사용할 것)
+
+  1. NET::ERR_CERT_REVOKED 화면의 빈 공간의 아무 곳에서 마우스 좌클릭.
+  2. 키보드로 `thisisunsafe` 문자열 입력. (화면에 보이지 않으니 그냥 입력)
+  3. 접속하고자 하는 화면이 보이면 성공. 보이지 않으면 화면 Refresh 하시고 다시 시도.
