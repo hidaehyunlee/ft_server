@@ -10,7 +10,7 @@ RUN	apt-get update && apt-get install -y \
 	openssl \
 	vim \
 	wget \
-	php7.3-fpm \
+	php7.3-fpm
 
 COPY	./srcs/run.sh ./
 COPY	./srcs/default ./tmp
