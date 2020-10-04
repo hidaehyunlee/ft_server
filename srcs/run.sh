@@ -23,7 +23,7 @@ cp -rp ./tmp/wp-config.php /var/www/html/wordpress
 
 # wordpress를 위한 DB 테이블 생성 
 service mysql start
-echo "CRATE DATABASE IF NOT EXISTS wordpress;" \
+echo "CREATE DATABASE IF NOT EXISTS wordpress;" \
 	| mysql -u root --skip-password
 echo "CREATE USER IF NOT EXISTS 'daelee'@'localhost' IDENTIFIED BY 'daelee';" \
 	| mysql -u root --skip-password
