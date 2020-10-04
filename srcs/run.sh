@@ -27,7 +27,7 @@ echo "CRATE DATABASE IF NOT EXISTS wordpress;" \
 	| mysql -u root --skip-password
 echo "CREATE USER IF NOT EXISTS 'daelee'@'localhost' IDENTIFIED BY 'daelee';" \
 	| mysql -u root --skip-password
-echo "GRANT ALL PRIVILEGES ON wordpress.* TO 'root'@'localhost' WITH GRANT OPTION;" \
+echo "GRANT ALL PRIVILEGES ON wordpress.* TO 'daelee'@'localhost' WITH GRANT OPTION;" \
 	| mysql -u root --skip-password
 	
 # phpMyAdmin 설치 및 설정
