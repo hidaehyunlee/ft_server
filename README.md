@@ -10,7 +10,7 @@ ft_server 는 시스템 관리 개념을 소개하기 위한 과제이다. *스�
 
 - **srcs** 라는 폴더 안에 서버 환경설정을 위한 모든 파일을 위치시켜라.
 - **Dockerfile** 은 깃 저장소의 루트에 있어야 한다. 이건 당신의 container를 build할 것이다.
-  docer-compose는 사용할 수 없다. (docker-compose : container실행을 간편히 해주는 것 )
+  docker-compose는 사용할 수 없다. (docker-compose : container실행을 간편히 해주는 것 )
 - WordPress 웹 사이트에 필요한 모든 파일은 srcs안에 있어야 한다.
 
 #### 3. 필수 사항
